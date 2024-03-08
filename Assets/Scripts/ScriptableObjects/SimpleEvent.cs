@@ -2,13 +2,14 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-//этот скрипт мы еще не обсуждали. Это простое событие, но в скриптовом объекте. На 10м вебе посмотрим подробнее
+//Это простое событие, но в скриптовом объекте. На 10м вебе посмотрели
 [CreateAssetMenu(menuName = "Group23/SimpleEvent")] 
 public class SimpleEvent : ScriptableObject
 {
     [SerializeField] private bool clearOnEnable;
     [SerializeField] private bool clearOnDisable;
-    private Action _invoked;
+    
+    private Action _invoked; 
 
     private void OnEnable()
     {
@@ -33,7 +34,6 @@ public class SimpleEvent : ScriptableObject
     static void RaiseEvent(MenuCommand command)
     {
         (command.context as SimpleEvent)?.Clear();
-        
     }
     
     [MenuItem("CONTEXT/" + nameof(SimpleEvent) + "/Raise Event")]
