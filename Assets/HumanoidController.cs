@@ -18,6 +18,7 @@ public class HumanoidController : MonoBehaviour
 
     private void Update()
     {
+        if(!_animator) return;
         _animator.SetFloat("Speed", Mathf.Clamp(moveVector.magnitude/ maxSpeedReference, 0, 1));
     }
 

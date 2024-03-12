@@ -6,10 +6,10 @@ using Random = UnityEngine.Random;
 public class Enemy : MonoBehaviour
 {
     public List<Transform> patrolPoints;
-    public PlayerCharacter player;
     public float viewAngle;
     public float damage = 30;
 
+    private PlayerCharacter _player;
     private NavMeshAgent _navMeshAgent;
     private bool _isPlayerNoticed;
     private Health _myHealth;
@@ -17,6 +17,7 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
+        _player = FindObjectOfType<PlayerCharacter>(true);
         InitComponentLinks();
         PickNewPatrolPoint();
     }
@@ -39,7 +40,7 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        if (!player) return;
+        if (!_player) return;
         NoticePlayerUpdate();
         ChaseUpdate();
         AttackUpdate();
@@ -48,14 +49,14 @@ public class Enemy : MonoBehaviour
 
     private void NoticePlayerUpdate()
     {
-        var direction = player.transform.position - transform.position;
+        var direction = _player.transform.position - transform.position;
         _isPlayerNoticed = false;
         if (Vector3.Angle(transform.forward, direction) < viewAngle)
         {
             RaycastHit hit;
             if (Physics.Raycast(transform.position + Vector3.up, direction, out hit))
             {
-                if (hit.collider.gameObject == player.gameObject)
+                if (hit.collider.gameObject == _player.gameObject)
                 {
                     _isPlayerNoticed = true;
                 }
@@ -82,7 +83,7 @@ public class Enemy : MonoBehaviour
     {
         if (_isPlayerNoticed)
         {
-            _navMeshAgent.destination = player.transform.position;
+            _navMeshAgent.destination = _player.transform.position;
         }
     }
 
@@ -92,7 +93,7 @@ public class Enemy : MonoBehaviour
         {
             if (_navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
             {
-                player.TakeDamage(damage * Time.deltaTime);
+                _player.TakeDamage(damage * Time.deltaTime);
             }
         }
     }

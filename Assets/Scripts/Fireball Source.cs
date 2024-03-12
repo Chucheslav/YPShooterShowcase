@@ -24,7 +24,7 @@ public class FireballSource : MonoBehaviour
         //создаем шарик
         if (Input.GetMouseButtonDown(0))
         {
-            Instantiate(fireballPrefab, T.position, T.rotation);
+            Fireball fireball = Instantiate(fireballPrefab, T.position, T.rotation);
         }
     }
 }
