@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8487454155039330482}
   - component: {fileID: 2656318553245149775}
-  - component: {fileID: 5723101485815020434}
   - component: {fileID: 8116687805517619520}
   - component: {fileID: 832165067470181107}
   m_Layer: 0
@@ -61,21 +60,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &5723101485815020434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2589178103919704095}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 898f1a95ed8943a4b8db6f0c712790cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gravity: 9.8
-  jumpForce: 10
-  speed: 5
 --- !u!114 &8116687805517619520
 MonoBehaviour:
   m_ObjectHideFlags: 0
