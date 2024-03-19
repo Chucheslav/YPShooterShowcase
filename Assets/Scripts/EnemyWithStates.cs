@@ -4,42 +4,52 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-[RequireComponent(typeof(NavMeshAgent), typeof(Health))]
+[RequireComponent(typeof(NavMeshAgent), typeof(Health), typeof(HumanoidController))]
 public class EnemyWithStates : MonoBehaviour
 {
-    public static int enemyCount;
     [SerializeField] private float attackDistance;
+    [SerializeField] private float damage = 30;
+    [SerializeField] private float viewAngle;
+    [SerializeField] private PlayerStats stats;
+    
+    public static int enemyCount;
+    
     public List<Transform> patrolPoints;
     
-    public float viewAngle;
-    public float damage = 30;
-
     private PlayerCharacter _player;
     private NavMeshAgent _navMeshAgent;
-    private bool _isPlayerNoticed;
     private Health _myHealth;
-
     private State _currentState;
+    private HumanoidController _controller;
 
     private void Awake()
     {
         _myHealth = GetComponent<Health>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
-        _player = FindObjectOfType<PlayerCharacter>(true);
-        enemyCount++;
+        _controller = GetComponent<HumanoidController>();
+        var animator = GetComponentInChildren<Animator>();
+        animator.SetLayerWeight(animator.GetLayerIndex("PistolAim"), 0);
     }
 
     private void OnEnable()
     {
+        enemyCount += 1;
+        _myHealth.ZeroHealth += DieDieMyDarling;
+        _player = FindObjectOfType<PlayerCharacter>(true);
         _currentState = new PatrolState();
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         _myHealth.ZeroHealth -= DieDieMyDarling;
         enemyCount -= 1;
     }
-    
+
+    private void OnDestroy()
+    {
+        stats.AddExp(100);
+    }
+
     private void DieDieMyDarling()
     {
         Destroy(gameObject);
@@ -47,7 +57,7 @@ public class EnemyWithStates : MonoBehaviour
 
     private void Update()
     {
-        _currentState.Tick(this);
+        if(_currentState != null) _currentState.Tick(this);
     }
 
     private void SwitchState(State to)
@@ -57,6 +67,27 @@ public class EnemyWithStates : MonoBehaviour
         _currentState.OnEnter(this);
     }
 
+    private Vector3 PickRandomPatrolPoint() => patrolPoints[Random.Range(0, patrolPoints.Count)].position;
+
+    private bool IsWithinAttackRange => Vector3.Distance(transform.position, _player.transform.position) <= attackDistance;
+
+    private bool IsPlayerNoticed()
+    {
+        if (!_player) return false;
+        var direction = _player.transform.position - transform.position;
+        if (Vector3.Angle(transform.forward, direction) < viewAngle)
+        {
+            if (Physics.Raycast(transform.position + Vector3.up, direction, out RaycastHit hit))
+            {
+                if (hit.transform.root.gameObject == _player.gameObject)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private abstract class State
     {
@@ -65,87 +96,66 @@ public class EnemyWithStates : MonoBehaviour
         public abstract void OnExit(EnemyWithStates enemy);
     }
 
-    private class FollowState : State
-    {
-        public override void OnEnter(EnemyWithStates enemy)
-        {
-            Debug.Log("Entering Follow State");
-        }
-
-        public override void Tick(EnemyWithStates enemy)
-        {
-            enemy._navMeshAgent.destination =  enemy._player.transform.position;
-            if (Vector3.Distance(enemy.transform.position, enemy._player.transform.position) <= enemy.attackDistance)
-            {
-                enemy.SwitchState( new AttackState());
-            }
-        }
-
-        public override void OnExit(EnemyWithStates enemy)
-        {
-            enemy._navMeshAgent.ResetPath();
-        }
-    }
-
     private class PatrolState : State
     {
         public override void OnEnter(EnemyWithStates enemy)
         {
             Debug.Log("Entering Patrol State");
-            enemy._navMeshAgent.SetDestination(PickNewPatrolPoint(enemy));
+            enemy._navMeshAgent.SetDestination(enemy.PickRandomPatrolPoint());
         }
 
         public override void Tick(EnemyWithStates enemy)
         {
             if(!enemy._navMeshAgent.hasPath) 
-                enemy._navMeshAgent.SetDestination(PickNewPatrolPoint(enemy));
+                enemy._navMeshAgent.SetDestination(enemy.PickRandomPatrolPoint());
             
-            var direction = enemy._player.transform.position -  enemy.transform.position;
-            if (Vector3.Angle( enemy.transform.forward, direction) <  enemy.viewAngle)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast( enemy.transform.position + Vector3.up, direction, out hit))
-                {
-                    if (hit.collider.gameObject == enemy._player.gameObject)
-                    {
-                        enemy.SwitchState(new FollowState());
-                    }
-                }
-            }
+            if(enemy.IsPlayerNoticed()) enemy.SwitchState(new ChaseState());
         }
 
         public override void OnExit(EnemyWithStates enemy)
         {
             enemy._navMeshAgent.ResetPath();
         }
-        
-        private Vector3 PickNewPatrolPoint(EnemyWithStates enemy)
+    }
+
+    private class ChaseState : State
+    {
+        public override void OnEnter(EnemyWithStates enemy)
         {
-            return  enemy.patrolPoints[Random.Range(0, enemy.patrolPoints.Count)].position;
+            Debug.Log("Entering Chase State");
+        }
+
+        public override void Tick(EnemyWithStates enemy)
+        {
+           enemy._navMeshAgent.destination = enemy._player.transform.position;
+           if(!enemy.IsPlayerNoticed()) enemy.SwitchState(new PatrolState());
+           else if (Vector3.Distance(enemy.transform.position, enemy._player.transform.position) <= enemy.attackDistance)
+               enemy.SwitchState(new AttackState());
+        }
+
+        public override void OnExit(EnemyWithStates enemy)
+        {
+            enemy._navMeshAgent.ResetPath();
         }
     }
 
     private class AttackState : State
     {
-        private HumanoidController _controller;
-        
         public override void OnEnter(EnemyWithStates enemy)
         {
             Debug.Log("Entering Attack State");
-            _controller = enemy.GetComponent<HumanoidController>();
         }
 
         public override void Tick(EnemyWithStates enemy)
         {
-            if(_controller.isAttacking) return;
-            if (Vector3.Distance(enemy.transform.position, enemy._player.transform.position) <= enemy.attackDistance)
-                _controller.ShowMelee();
-            else
-                enemy.SwitchState(new PatrolState());
+            if(enemy._controller.isAttacking) return;
+            if (Vector3.Distance(enemy.transform.position, enemy._player.transform.position) <= enemy.attackDistance) 
+                enemy._controller.ShowMelee();
+            else enemy.SwitchState(new ChaseState());
         }
 
-        public override void OnExit(EnemyWithStates enemy) { }
+        public override void OnExit(EnemyWithStates enemy)
+        { }
     }
+    
 }
-
-

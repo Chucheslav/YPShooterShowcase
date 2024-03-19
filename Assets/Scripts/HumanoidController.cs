@@ -11,6 +11,7 @@ public class HumanoidController : MonoBehaviour
 
     private CharacterController _characterController;
     private Animator _animator;
+    
     private static readonly int Swing = Animator.StringToHash("Swing");
     private static readonly int Speed = Animator.StringToHash("Speed");
 
@@ -35,7 +36,5 @@ public class HumanoidController : MonoBehaviour
     {
         _animator.SetLayerWeight(_animator.GetLayerIndex("PistolAim"), 0);
         _animator.SetTrigger(Swing);
-
-        var t = _animator.GetCurrentAnimatorStateInfo(0);
     }
 }

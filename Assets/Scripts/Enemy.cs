@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
     private bool _isPlayerNoticed;
     private Health _myHealth;
     
+    
 
     void Start()
     {
