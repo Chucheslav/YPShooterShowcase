@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: New Player Stats
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   baseSpeed: 2
+  healthSo: {fileID: 11400000, guid: bc9c850d82d88624282bd33a91caa7ef, type: 2}
   <expPerLevel>k__BackingField: 12
   moveSpeed: 2
-  currentLevel: 1
+  <currentExp>k__BackingField: 0
+  currentLevel: 2

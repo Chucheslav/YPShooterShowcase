@@ -434,6 +434,7 @@ MonoBehaviour:
   attackDistance: 1
   damage: 30
   viewAngle: 90
+  stats: {fileID: 11400000, guid: 85ee80db1193c2041bad0c36b70eb5fb, type: 2}
   patrolPoints:
   - {fileID: 1015742605}
   - {fileID: 921574855}
@@ -1445,6 +1446,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerHealth: {fileID: 11400000, guid: bc9c850d82d88624282bd33a91caa7ef, type: 2}
+  stats: {fileID: 11400000, guid: 85ee80db1193c2041bad0c36b70eb5fb, type: 2}
 --- !u!4 &989684761
 Transform:
   m_ObjectHideFlags: 0
@@ -5028,8 +5030,7 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0.011649374
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7584558262741621535, guid: 1c823da0830904f41bcff34c7a7b1bdd, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
